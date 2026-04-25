@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jornada de Dados: Thaís Santana</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <style>
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        body {
+            background-color: #fafaf9;
+            color: #292524;
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .step-active {
+            border-left-color: #d97706 !important;
+            background-color: #fef3c7 !important;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col items-center py-10 px-4 sm:px-8">
+
+    <!-- Chosen Palette: Warm Neutrals with Amber and Teal Accents -->
+    <!-- Application Structure Plan: The SPA uses a dashboard/split-view layout. The left column serves as an interactive timeline/navigation menu representing the 12-month journey. The right column displays the detailed content for the selected phase and a visual summary chart. This structure allows Thaís to see the big picture while easily diving into the specifics of each phase without feeling overwhelmed by a massive block of text. -->
+    <!-- Visualization & Content Choices: 
+         1. Timeline Navigation: HTML/Tailwind -> Goal: Organize & Change -> Interaction: Clickable steps -> Justification: Breaks down the 12-month plan into digestible chunks.
+         2. Doughnut Chart: Chart.js -> Goal: Inform & Proportions -> Interaction: Highlights active phase -> Justification: Visually demonstrates the time commitment required for each tool/phase over the year.
+         3. Dynamic Content Panels: Vanilla JS -> Goal: Inform -> Interaction: Updates based on timeline selection -> Justification: Keeps the UI clean and focused on the current learning objective. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <header
+        class="max-w-6xl w-full mb-10 text-center sm:text-left flex flex-col sm:flex-row justify-between items-center bg-white p-8 rounded-2xl shadow-sm border border-stone-200">
+        <div>
+            <h1 class="text-4xl font-extrabold text-stone-900 mb-2">🚀 Roadmap: Thaís Santana</h1>
+            <h2 class="text-xl text-stone-500 font-medium">Do Zero a Analista de Dados em 12 Meses</h2>
+        </div>
+        <div class="mt-4 sm:mt-0 text-center sm:text-right bg-amber-50 p-4 rounded-xl border border-amber-200">
+            <p class="text-sm text-amber-800 font-semibold mb-1">Seu Guia Definitivo</p>
+            <p class="text-xs text-amber-700 max-w-xs">A área de dados é incrível! Você não precisa ser uma "hacker"
+                para começar, só precisa ser curiosa e gostar de resolver problemas.</p>
+        </div>
+    </header>
+
+    <main class="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+        <section class="lg:col-span-4 flex flex-col gap-4">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-200">
+                <h3 class="text-lg font-bold text-stone-800 mb-4 border-b border-stone-100 pb-2">Sua Jornada (Navegação)
+                </h3>
+                <p class="text-sm text-stone-500 mb-6">Clique nas fases abaixo para explorar o que você estudará em cada
+                    etapa do seu ano. Cada fase constrói a base para a próxima.</p>
+                <div id="timeline-container" class="flex flex-col gap-3">
+                </div>
+            </div>
+
+            <div class="bg-teal-50 p-6 rounded-2xl shadow-sm border border-teal-100 mt-4">
+                <h3 class="text-teal-900 font-bold mb-2">💡 Dicas do Mentor (Felipe)</h3>
+                <ul class="text-sm text-teal-800 space-y-3">
+                    <li><span class="font-bold text-teal-900">Consistência &gt; Intensidade:</span> 1 horinha bem feita
+                        por dia é melhor que 10h no fim de semana. O ano tem 12 meses, confie no processo.</li>
+                    <li><span class="font-bold text-teal-900">Errar faz parte:</span> O código ou a fórmula vai falhar.
+                        Tudo bem! O trabalho do Analista é investigar e consertar.</li>
+                    <li><span class="font-bold text-teal-900">Use a DIO ao máximo:</span> Entregue todos os projetos
+                        práticos, não foque só em assistir vídeo.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="lg:col-span-8 flex flex-col gap-6">
+
+            <div
+                class="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-stone-200 flex flex-col md:flex-row items-center gap-8">
+                <div class="flex-1 w-full">
+                    <h3 class="text-xl font-bold text-stone-800 mb-2">Distribuição do Tempo (12 Meses)</h3>
+                    <p class="text-sm text-stone-500 mb-4">Este gráfico mostra o peso de cada habilidade na sua
+                        formação. Aprender Python exige mais tempo que a lógica inicial, por exemplo.</p>
+                    <div class="chart-container">
+                        <canvas id="timeChart"></canvas>
+                    </div>
+                </div>
+                <div class="flex-1 w-full flex justify-center">
+                    <div class="bg-stone-50 p-6 rounded-xl border border-stone-200 text-center w-full max-w-sm">
+                        <div class="text-4xl mb-2" id="phase-icon">🎯</div>
+                        <h4 class="text-lg font-bold text-stone-800 mb-1" id="phase-short-title">Fase 0</h4>
+                        <p class="text-stone-500 text-sm font-medium" id="phase-months">Mês 1</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-stone-200 min-h-[400px]">
+                <div class="flex items-center gap-3 mb-6 border-b border-stone-100 pb-4">
+                    <span id="detail-icon" class="text-3xl">🎯</span>
+                    <div>
+                        <h2 id="detail-title" class="text-2xl font-bold text-stone-800">O Despertar da Força</h2>
+                        <p id="detail-subtitle" class="text-stone-500 font-medium mt-1">Mês 1 &bull; Preparação e Lógica
+                        </p>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h4 class="text-sm uppercase tracking-wider font-bold text-amber-600 mb-2">Objetivo</h4>
+                    <p id="detail-objective"
+                        class="text-stone-700 text-lg leading-relaxed bg-amber-50 p-4 rounded-lg border border-amber-100">
+                        Entender o que é tecnologia, o que um analista faz e treinar o cérebro para pensar de forma
+                        estruturada.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h4 class="text-sm uppercase tracking-wider font-bold text-stone-400 mb-3">📚 O Que Estudar</h4>
+                        <ul id="detail-study-list" class="space-y-2">
+                        </ul>
+                    </div>
+
+                    <div class="flex flex-col gap-6">
+                        <div>
+                            <h4 class="text-sm uppercase tracking-wider font-bold text-stone-400 mb-3">🌐 Onde focar na
+                                DIO</h4>
+                            <div id="detail-dio-focus"
+                                class="bg-stone-50 p-4 rounded-lg border border-stone-200 text-stone-700 text-sm">
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="text-sm uppercase tracking-wider font-bold text-stone-400 mb-3">🛠️ Prática</h4>
+                            <div id="detail-practice"
+                                class="bg-teal-50 p-4 rounded-lg border border-teal-100 text-teal-900 text-sm font-medium">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <script>
+        const roadmapData = [
+            {
+                id: 0,
+                title: "Fase 0: O Despertar da Força",
+                shortTitle: "Lógica e TI",
+                months: "Mês 1",
+                duration: 1,
+                icon: "🎯",
+                objective: "Entender o que é tecnologia, o que um analista faz e treinar o cérebro para pensar de forma estruturada.",
+                study: [
+                    "O que faz um Analista vs. Cientista vs. Engenheiro de Dados.",
+                    "Pensamento Computacional.",
+                    "Lógica de Programação Básica."
+                ],
+                dio: "Procure cursos como <strong>Lógica de Programação Básica</strong> ou <strong>Pensamento Computacional</strong>.",
+                practice: "Peça para o Felipe te explicar o básico de como um computador processa informações. Isso ajuda muito a desmistificar a TI!"
+            },
+            {
+                id: 1,
+                title: "Fase 1: A Base Inabalável",
+                shortTitle: "Excel e Planilhas",
+                months: "Mês 2 e 3",
+                duration: 2,
+                icon: "📊",
+                objective: "O Excel é a ferramenta de dados mais usada no mundo. Você precisa dominá-lo antes de qualquer código.",
+                study: [
+                    "Operações matemáticas e formatação.",
+                    "Fórmulas essenciais: SOMA, MÉDIA, PROCV (VLOOKUP), SE (IF), CONT.SE.",
+                    "<strong>Tabelas Dinâmicas:</strong> Aprenda a resumir grandes tabelas.",
+                    "Gráficos básicos (Barras, Linhas, Pizza)."
+                ],
+                dio: "Busque cursos focados em Excel do básico ao avançado.",
+                practice: "Pegue uma planilha de gastos da casa e crie um painel resumo de onde o dinheiro está indo."
+            },
+            {
+                id: 2,
+                title: "Fase 2: A Linguagem Universal",
+                shortTitle: "SQL e Banco de Dados",
+                months: "Mês 4 e 5",
+                duration: 2,
+                icon: "🗄️",
+                objective: "Aprender a conversar com o Banco de Dados. Todo analista de dados precisa saber extrair dados usando SQL.",
+                study: [
+                    "Bancos de Dados Relacionais (Tabelas, Linhas, Colunas).",
+                    "Comandos Básicos: SELECT, FROM, WHERE, ORDER BY.",
+                    "Agregações: GROUP BY, COUNT, SUM, AVG.",
+                    "Cruzamento de Tabelas: <strong>JOIN</strong> (Isso é o que mais cai em entrevistas!)."
+                ],
+                dio: "Busque a <strong>Formação SQL Database Specialist</strong> ou Bootcamps de Banco de Dados Relacional.",
+                practice: "A DIO tem projetos práticos de modelagem e consultas. Faça todos!"
+            },
+            {
+                id: 3,
+                title: "Fase 3: Contando Histórias Visuais",
+                shortTitle: "Power BI",
+                months: "Mês 6 e 7",
+                duration: 2,
+                icon: "🎨",
+                objective: "Criar Dashboards interativos que as empresas amam ver. A partir daqui, você já é 'empregável' como Analista Jr!",
+                study: [
+                    "Conectar dados no Power BI (Excel, Bancos).",
+                    "Tratamento de dados básico com o Power Query.",
+                    "Criação de visuais e Dashboards interativos.",
+                    "Fórmulas DAX básicas."
+                ],
+                dio: "Busque a <strong>Formação Power BI Analyst</strong> (É uma das melhores trilhas da DIO para iniciar rápido no mercado).",
+                practice: "Crie um Dashboard de Vendas ou RH com as bases dos projetos práticos da DIO."
+            },
+            {
+                id: 4,
+                title: "Fase 4: O Diferencial Competitivo",
+                shortTitle: "Python Analytics",
+                months: "Mês 8, 9 e 10",
+                duration: 3,
+                icon: "🐍",
+                objective: "Subir de nível. Python permite automatizar tarefas e analisar dados grandes demais para o Excel. Dedicamos 3 meses aqui.",
+                study: [
+                    "Sintaxe básica (Variáveis, Listas, Loops, Condicionais).",
+                    "Biblioteca <strong>Pandas</strong> (O 'Excel' do Python).",
+                    "Bibliotecas <strong>Matplotlib</strong> ou <strong>Seaborn</strong> para gráficos."
+                ],
+                dio: "Busque a <strong>Formação Python Data Analytics</strong> ou Bootcamps de Ciência de Dados com Python.",
+                practice: "Não se assuste se achar difícil no começo. Foque em aprender a usar o Pandas para abrir e limpar arquivos."
+            },
+            {
+                id: 5,
+                title: "Fase 5: O 1º Emprego",
+                shortTitle: "Portfólio e Entrevistas",
+                months: "Mês 11 e 12",
+                duration: 2,
+                icon: "🚀",
+                objective: "Mostrar ao mundo o que você aprendeu, polir os projetos e conseguir a vaga.",
+                study: [
+                    "Criar um GitHub e subir 3 projetos bem documentados (Excel, SQL e Power BI).",
+                    "Atualizar LinkedIn: 'Estudante de Análise de Dados | SQL | Power BI | Python'.",
+                    "Postar todos os certificados e aprendizados.",
+                    "Buscar vagas: Analista de Dados/BI Jr, Estágio, Assistente."
+                ],
+                dio: "Finalize os últimos projetos das trilhas e gere os certificados.",
+                practice: "Se a vaga pedir 10 coisas e você souber 5, APLIQUE! Vaga Júnior é para aprender também."
+            }
+        ];
+
+        let currentState = 0;
+        let timeChartInstance = null;
+
+        const baseColors = [
+            '#e7e5e4',
+            '#e7e5e4',
+            '#e7e5e4',
+            '#e7e5e4',
+            '#e7e5e4',
+            '#e7e5e4'
+        ];
+        const activeColor = '#d97706';
+
+        function initApp() {
+            renderTimeline();
+            initChart();
+            updateContent(0);
+        }
+
+        function renderTimeline() {
+            const container = document.getElementById('timeline-container');
+            container.innerHTML = '';
+
+            roadmapData.forEach((phase, index) => {
+                const btn = document.createElement('button');
+                btn.className = `w-full text-left p-4 rounded-xl border-l-4 border-transparent bg-stone-50 hover:bg-stone-100 transition-colors duration-200 flex items-center justify-between group ${index === currentState ? 'step-active' : ''}`;
+                btn.onclick = () => handlePhaseClick(index);
+
+                btn.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="text-2xl">${phase.icon}</span>
+                        <div>
+                            <div class="text-xs font-bold text-stone-400 uppercase tracking-wider mb-0.5">${phase.months}</div>
+                            <div class="text-sm font-semibold text-stone-800 group-hover:text-amber-700">${phase.shortTitle}</div>
+                        </div>
+                    </div>
+                    <div class="text-stone-300 group-hover:text-amber-500 transition-colors">
+                        &#10095;
+                    </div>
+                `;
+                container.appendChild(btn);
+            });
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('timeChart').getContext('2d');
+            const dataLengths = roadmapData.map(d => d.duration);
+            const labels = roadmapData.map(d => d.shortTitle);
+
+            const bgColors = [...baseColors];
+            bgColors[0] = activeColor;
+
+            timeChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: dataLengths,
+                        backgroundColor: bgColors,
+                        borderWidth: 2,
+                        borderColor: '#ffffff',
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    return ` ${context.label}: ${context.raw} Mês(es)`;
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        animateScale: true,
+                        animateRotate: true
+                    }
+                }
+            });
+        }
+
+        function updateChartHighlight(activeIndex) {
+            if (!timeChartInstance) return;
+            const newColors = [...baseColors];
+            newColors[activeIndex] = activeColor;
+            timeChartInstance.data.datasets[0].backgroundColor = newColors;
+            timeChartInstance.update();
+        }
+
+        function handlePhaseClick(index) {
+            currentState = index;
+            renderTimeline();
+            updateChartHighlight(index);
+            updateContent(index);
+        }
+
+        function updateContent(index) {
+            const data = roadmapData[index];
+
+            document.getElementById('phase-icon').innerText = data.icon;
+            document.getElementById('phase-short-title').innerText = data.shortTitle;
+            document.getElementById('phase-months').innerText = data.months;
+
+            document.getElementById('detail-icon').innerText = data.icon;
+            document.getElementById('detail-title').innerText = data.title;
+            document.getElementById('detail-subtitle').innerText = `${data.months} • Foco Principal`;
+            document.getElementById('detail-objective').innerText = data.objective;
+
+            const studyList = document.getElementById('detail-study-list');
+            studyList.innerHTML = '';
+            data.study.forEach(item => {
+                const li = document.createElement('li');
+                li.className = "flex items-start gap-2 text-stone-700 text-sm";
+                li.innerHTML = `<span class="text-amber-500 mt-0.5">&#10003;</span> <span>${item}</span>`;
+                studyList.appendChild(li);
+            });
+
+            document.getElementById('detail-dio-focus').innerHTML = data.dio;
+            document.getElementById('detail-practice').innerHTML = data.practice;
+        }
+
+        document.addEventListener('DOMContentLoaded', initApp);
+
+    </script>
+</body>
+
+</html>
